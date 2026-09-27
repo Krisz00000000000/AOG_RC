@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Drawing;
+using RateController.Classes;
 
 namespace RateController.RateMap
 {
     public static class Palette
     {
-        public const byte TargetZoneTransparency = 150;
-        public const byte ZoneTransparency = 150;
+        public static byte TargetZoneTransparency => MapTransparencySettings.TargetZoneTransparency;
+        public static byte ZoneTransparency => MapTransparencySettings.ZoneTransparency;
 
         // Rate zones: Blue=low rate, Red=high rate
         private static readonly Color[] Colors = new Color[]
@@ -54,26 +55,27 @@ namespace RateController.RateMap
         };
 
         /// <summary>Returns a colour for a productivity zone where z=0 is lowest potential.</summary>
-        public static Color GetProductivityColor(int z, int zoneCount, byte trns = TargetZoneTransparency)
+        public static Color GetProductivityColor(int z, int zoneCount, byte trns = 0)
         {
+            byte transparency = trns == 0 ? TargetZoneTransparency : trns;
             if (zoneCount <= 1)
-                return Color.FromArgb(trns, ProductivityColors[ProductivityColors.Length - 1]);
+                return Color.FromArgb(transparency, ProductivityColors[ProductivityColors.Length - 1]);
 
-            // Interpolate across the palette so every zone gets a distinct colour.
             double t  = (double)z / (zoneCount - 1) * (ProductivityColors.Length - 1);
             int    lo = Math.Max(0, Math.Min(ProductivityColors.Length - 2, (int)t));
             double f  = t - lo;
             Color  a  = ProductivityColors[lo];
             Color  b  = ProductivityColors[lo + 1];
-            return Color.FromArgb(trns,
+            return Color.FromArgb(transparency,
                 (int)(a.R + (b.R - a.R) * f),
                 (int)(a.G + (b.G - a.G) * f),
                 (int)(a.B + (b.B - a.B) * f));
         }
 
-        public static Color GetColor(int index, bool IsYieldData = false, byte trns = ZoneTransparency)
+        public static Color GetColor(int index, bool IsYieldData = false, byte trns = 0)
         {
             Color Result;
+            byte transparency = trns == 0 ? ZoneTransparency : trns;
 
             if (IsYieldData)
             {
@@ -88,7 +90,7 @@ namespace RateController.RateMap
                 Result = Colors[safeIndex];
             }
 
-            return Color.FromArgb(trns, Result);
+            return Color.FromArgb(transparency, Result);
         }
     }
 }
